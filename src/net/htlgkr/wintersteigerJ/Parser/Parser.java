@@ -42,7 +42,10 @@ public class Parser{
 
 
         for (Future<List<String>> future : futures){
-            future.get().stream().forEach(System.out::println);
+            future.get()
+                    .stream()
+                    .filter(s -> !s.isEmpty())
+                    .forEach(System.out::println);
         }
         } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException(e);

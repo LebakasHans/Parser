@@ -17,5 +17,8 @@ public class Main {
         System.out.println("----------------------------------------------------------------");
         parser = new Parser("nothing.html");
         parser.parse();
+        System.out.println("----------------------------------------------------------------");
+        parser = new Parser("advanced.html");
+        parser.parse();
     }
 }
