@@ -1,9 +1,12 @@
 package net.htlgkr.wintersteigerJ.Parser;
 
 import java.io.*;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 public class Parser{
@@ -26,54 +29,23 @@ public class Parser{
     }
 
     public void parse(){
-        /*
         ExecutorService executor = Executors.newFixedThreadPool(lines.size());
+        List<ParserThread> parserThreads = new ArrayList<>();
+        List<Future<List<String>>> futures;
 
         for(int i = 0; i < lines.size(); i++){
-            executor.execute(new ParserThread(lines.get(i)));
-        }
-        TODO remove comment
-         */
-
-        String test = recursivelyParse(3);
-        System.out.println(test);
-    }
-
-
-    //TODO make Thread
-    public String recursivelyParse(int startIndexInLine){
-        String line = lines.get(3); //TODO delete
-        String output = "";
-        int counter = startIndexInLine;
-
-        while(counter < line.length()){
-            char c = line.charAt(counter);
-            String s = "";
-            while (c != '<'){
-                s += c;
-                counter++;
-                c = line.charAt(counter);
-            }
-            output += s;
-
-            if(line.charAt(counter+1) == '/'){
-                return output;
-            }else{
-                counter++;
-                c = line.charAt(counter);
-                String nextTag = "";
-                while (c != '>'){
-                    nextTag += c;
-                    counter++;
-                    c = line.charAt(counter);
-                }
-                var temp = line.charAt(counter);
-                String recursiveOutput = recursivelyParse(counter+1);
-                output += recursiveOutput;
-                counter = counter + 3 + nextTag.length()*2 + recursiveOutput.length();
-            }
+            parserThreads.add(new ParserThread(lines.get(i)));
         }
 
-        return output;
+        try {
+            futures = executor.invokeAll(parserThreads);
+
+
+        for (Future<List<String>> future : futures){
+            future.get().stream().forEach(System.out::println);
+        }
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

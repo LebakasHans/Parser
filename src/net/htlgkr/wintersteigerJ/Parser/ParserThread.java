@@ -1,55 +1,81 @@
 package net.htlgkr.wintersteigerJ.Parser;
 
-import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
 
-public class ParserThread implements Runnable{
+public class ParserThread implements Callable<List<String>> {
     private String line;
-    private ArrayDeque<String> tags = new ArrayDeque<String>();
-    private String output;
+    private List<String> parsedLines = new ArrayList<>();
+    private int currentIndexInLine;
 
     public ParserThread(String line) {
         this.line = line.trim();;
+        currentIndexInLine = indexAfterFirstTag();
     }
 
     @Override
-    public void run() {
-        char c = ' ';
-        String tag = "";
-        int counter = 1;
-
-        while(c != '>'){
-            c = line.charAt(counter);
-            tag += c;
-            counter++;
-        }
-        recursivelyParse(tag, counter);
+    public List<String> call() throws Exception {
+        recursivelyParse(0);
+        return parsedLines;
     }
 
-    public String recursivelyParse(String tag, int charIndexInLine){
-        String parsedLine = "";
-        int counter = charIndexInLine;
-        char c = ' ';
+    private int indexAfterFirstTag(){
+        line = line.trim();
+        if(line.startsWith("<")) {
+            char c = ' ';
+            int counter = 0;
 
-        while(c != '<'){
-            c = line.charAt(counter);
-            counter++;
-        }
-
-        if(line.charAt(counter) != '/')
-        {
-            String nextTag = "";
-            while(c != '>')
-            {
+            while (c != '>') {
                 c = line.charAt(counter);
-                nextTag += c;
                 counter++;
             }
-            parsedLine += recursivelyParse(nextTag, counter) + "\n";
-        }else
-        {
-            return line.substring(charIndexInLine, counter-1);
+            return counter;
+        }else{
+            return 0;
+        }
+    }
+
+    public List<String> recursivelyParse(int index){
+        if(index >= parsedLines.size()){
+            parsedLines.add("");
         }
 
-        return parsedLine;
+        String output = "";
+
+        while(currentIndexInLine < line.length()){
+            char c = line.charAt(currentIndexInLine);
+            while (c != '<'){
+                output += c;
+                currentIndexInLine++;
+                if(currentIndexInLine >= line.length()){
+                    parsedLines.set(index, parsedLines.get(index) + output);
+                    return parsedLines;
+                }
+                c = line.charAt(currentIndexInLine);
+            }
+            currentIndexInLine++;
+            if(line.charAt(currentIndexInLine) != '/'){
+                c = line.charAt(currentIndexInLine);
+                int tagLength = 0;
+                while (c != '>'){
+                    tagLength++;
+                    currentIndexInLine++;
+                    c = line.charAt(currentIndexInLine);
+                }
+                currentIndexInLine++;
+                recursivelyParse(parsedLines.size());
+            }else{
+                c = line.charAt(currentIndexInLine);
+                while (c != '>'){
+                    currentIndexInLine++;
+                    c = line.charAt(currentIndexInLine);
+                }
+                currentIndexInLine++;
+                parsedLines.set(index, parsedLines.get(index) + output);
+                return parsedLines;
+            }
+        }
+        return parsedLines;
     }
 }
