@@ -44,8 +44,9 @@ public class ParserThread implements Callable<List<String>> {
         String output = "";
 
         while(currentIndexInLine < line.length()){
+            boolean inQuotes = false;
             char c = line.charAt(currentIndexInLine);
-            while (c != '<'){
+            while (c != '<' || inQuotes){
                 output += c;
                 currentIndexInLine++;
                 if(currentIndexInLine >= line.length()){
@@ -53,6 +54,11 @@ public class ParserThread implements Callable<List<String>> {
                     return parsedLines;
                 }
                 c = line.charAt(currentIndexInLine);
+                if(c == '"'){
+                    inQuotes = true;
+                }else if(c == '"'){
+                    inQuotes = false;
+                }
             }
             currentIndexInLine++;
             if(line.charAt(currentIndexInLine) != '/'){

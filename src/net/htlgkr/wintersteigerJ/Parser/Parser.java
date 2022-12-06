@@ -50,5 +50,7 @@ public class Parser{
         } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException(e);
         }
+
+        executor.shutdown();
     }
 }
